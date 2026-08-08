@@ -1,34 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import ThemeRegistry from "@/app/providers/ThemeRegistry";
-import AuthSessionProvider from "@/app/providers/AuthSessionProvider";
-import NavigationProgress from "@/app/providers/NavigationProgress";
-import "@/app/globals.css";
+import type { ReactNode } from "react";
+import "./globals.css";
+import { Providers } from "./providers";
 
 export const metadata: Metadata = {
-  title: "5問で見える、あなたの強み | AIキャリア診断",
-  description:
-    "経験と志向から、あなたらしい強みと活かし方を提案するAIキャリア診断。約3分、無料プランから利用できます。",
+  title: "AI自分探しサービス | 5問で見つかる、本当の自分",
+  description: "AIからの5問に答えるだけ。性格・価値観・才能を分析し、明日から踏み出せる一歩を提案します。",
+  openGraph: {
+    title: "AI自分探しサービス",
+    description: "わずか3分。AIが本当のあなたと、明日からの一歩を提案します。",
+    type: "website",
+    locale: "ja_JP",
+  },
 };
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-};
+export const viewport: Viewport = { width: "device-width", initialScale: 1, themeColor: "#102c68" };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="ja" data-scroll-behavior="smooth" suppressHydrationWarning>
-      <body suppressHydrationWarning>
-        <ThemeRegistry>
-          <AuthSessionProvider>
-            <NavigationProgress />
-            {children}
-          </AuthSessionProvider>
-        </ThemeRegistry>
+    <html lang="ja">
+      <body>
+        <a href="#main-content" className="skip-link">本文へ移動</a>
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

@@ -1,83 +1,35 @@
 "use client";
 
 import { createTheme } from "@mui/material/styles";
-import { JP_MINCHO_FONT_FAMILY, JP_MINCHO_FONT_WEIGHT } from "@/lib/fonts";
-import { jpTextSx } from "@/lib/typography";
 
-export const ACCENT = "#387bff";
-
-export const ACCENT_GLOW =
-  "radial-gradient(1000px 600px at 50% 0%, rgba(56,123,255,0.28), transparent 65%)";
-
-export const PANEL_TINTS = {
-  blue: "radial-gradient(1200px 800px at 80% 30%, rgba(37,99,235,0.35), transparent 60%)",
-  indigo:
-    "radial-gradient(1200px 800px at 20% 30%, rgba(99,49,221,0.35), transparent 60%)",
-  teal: "radial-gradient(1200px 800px at 70% 70%, rgba(13,148,136,0.32), transparent 60%)",
-};
-
-const theme = createTheme({
+export const theme = createTheme({
   palette: {
-    mode: "dark",
-    primary: {
-      main: ACCENT,
-      contrastText: "#ffffff",
-    },
-    background: {
-      default: "#000000",
-      paper: "#0a0a0a",
-    },
-    text: {
-      primary: "#ffffff",
-      secondary: "rgba(255,255,255,0.7)",
-    },
-    divider: "rgba(255,255,255,0.14)",
+    mode: "light",
+    primary: { main: "#155EEF", dark: "#0B3EB8", contrastText: "#FFFFFF" },
+    text: { primary: "#172033", secondary: "#5A657A" },
+    background: { default: "#F7F9FC", paper: "#FFFFFF" },
+    divider: "#DDE3EC",
   },
+  shape: { borderRadius: 18 },
   typography: {
-    fontFamily: JP_MINCHO_FONT_FAMILY,
-    fontWeightRegular: JP_MINCHO_FONT_WEIGHT,
-    fontWeightMedium: JP_MINCHO_FONT_WEIGHT,
-    fontWeightBold: 700,
-    h1: { fontWeight: 700, lineHeight: 1.08, letterSpacing: "0.02em" },
-    h2: { fontWeight: 700, lineHeight: 1.12, letterSpacing: "0.02em" },
-    h3: { fontWeight: JP_MINCHO_FONT_WEIGHT, lineHeight: 1.2 },
-    button: { fontWeight: JP_MINCHO_FONT_WEIGHT, textTransform: "none" },
-  },
-  shape: {
-    borderRadius: 4,
+    fontFamily: "var(--font-noto-sans-jp), sans-serif",
+    h1: { fontWeight: 800, letterSpacing: "-0.045em", lineHeight: 1.18 },
+    h2: { fontWeight: 800, letterSpacing: "-0.035em", lineHeight: 1.25 },
+    h3: { fontWeight: 700, letterSpacing: "-0.02em", lineHeight: 1.4 },
+    body1: { lineHeight: 1.9 },
+    button: { fontWeight: 700, textTransform: "none" },
   },
   components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          fontFamily: JP_MINCHO_FONT_FAMILY,
-          fontWeight: JP_MINCHO_FONT_WEIGHT,
-          ...jpTextSx,
-        },
-      },
-    },
-    MuiTypography: {
-      styleOverrides: {
-        root: jpTextSx,
-      },
-    },
-    MuiListItemText: {
-      styleOverrides: {
-        root: {
-          minWidth: 0,
-        },
-        primary: jpTextSx,
-        secondary: jpTextSx,
-      },
-    },
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 3,
+          minHeight: 52,
+          borderRadius: 999,
+          paddingInline: 28,
+          boxShadow: "none",
+          "&:focus-visible": { outline: "3px solid #82ADFF", outlineOffset: 3 },
         },
       },
     },
   },
 });
-
-export default theme;

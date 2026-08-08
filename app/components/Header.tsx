@@ -1,107 +1,31 @@
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import Container from "@mui/material/Container";
-import Box from "@mui/material/Box";
-import Typography from "@mui/material/Typography";
-import Link from "@mui/material/Link";
-import Stack from "@mui/material/Stack";
-import ExploreIcon from "@mui/icons-material/Explore";
-import HeaderAuthActions from "@/app/components/HeaderAuthActions";
+"use client";
 
-const navItems = [
-  { label: "WHY CHOOSE US", href: "#features" },
-  { label: "HOW IT WORKS", href: "#steps" },
-  { label: "PRICING", href: "#pricing" },
-  { label: "START NOW", href: "#start" },
-];
+import { useState } from "react";
+import Image from "next/image";
 
-const concernsNav = { label: "YOUR CONCERNS", href: "#pain" };
+const links = [
+  ["特徴", "#features"],
+  ["ご利用の流れ", "#flow"],
+  ["料金プラン", "#pricing"],
+  ["よくある質問", "#faq"],
+] as const;
 
-const navLinkSx = {
-  color: "rgba(255,255,255,0.8)",
-  fontSize: { md: "0.64rem", lg: "0.7rem" },
-  fontWeight: 600,
-  letterSpacing: "0.12em",
-  whiteSpace: "nowrap",
-  flexShrink: 0,
-  wordBreak: "normal",
-  lineBreak: "auto",
-  transition: "color 0.2s ease",
-  cursor: "pointer",
-  "&:hover": { color: "#fff" },
-} as const;
+export function Header() {
+  const [open, setOpen] = useState(false);
 
-export default function Header() {
   return (
-    <AppBar
-      position="fixed"
-      elevation={0}
-      sx={{
-        background:
-          "linear-gradient(180deg, rgba(0,0,0,0.55) 0%, rgba(0,0,0,0) 100%)",
-        backdropFilter: "blur(2px)",
-        boxShadow: "none",
-      }}
-    >
-      <Container maxWidth="lg">
-        <Toolbar disableGutters sx={{ minHeight: { xs: 56, md: 72 }, gap: 1 }}>
-          <Link
-            href="#top"
-            underline="none"
-            aria-label="ページ先頭へ戻る"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              color: "inherit",
-              transition: "opacity 0.2s ease",
-              "&:hover": { opacity: 0.85 },
-            }}
-          >
-            <ExploreIcon sx={{ color: "#fff", fontSize: 24 }} />
-            <Typography
-              component="span"
-              sx={{
-                fontWeight: 700,
-                fontSize: { xs: "0.95rem", md: "1.05rem" },
-                letterSpacing: "0.06em",
-                color: "#fff",
-              }}
-            >
-              AIキャリア診断
-            </Typography>
-          </Link>
-
-          <Box sx={{ flexGrow: 1 }} />
-
-          <Stack
-            direction="row"
-            spacing={{ md: 1.75, lg: 2.75 }}
-            alignItems="center"
-            sx={{
-              mr: { xs: 0.5, md: 0.5 },
-              flexShrink: 0,
-              display: { xs: "none", md: "flex" },
-            }}
-          >
-            <Link
-              href={concernsNav.href}
-              underline="none"
-              sx={navLinkSx}
-            >
-              {concernsNav.label}
-            </Link>
-
-            {navItems.map((item) => (
-              <Link key={item.href} href={item.href} underline="none" sx={navLinkSx}>
-                {item.label}
-              </Link>
-            ))}
-          </Stack>
-
-          <HeaderAuthActions />
-        </Toolbar>
-      </Container>
-    </AppBar>
+    <header className="site-header">
+      <a className="brand" href="#top" aria-label="AI自分探しサービス トップへ">
+        <Image className="brand-emblem" src="/images/brand-emblem-gold.png" alt="" width={1024} height={1024} priority aria-hidden="true" />
+        <span><strong>AI自分探し</strong><small>サービス</small></span>
+      </a>
+      <nav className={open ? "nav is-open" : "nav"} aria-label="メインナビゲーション">
+        {links.map(([label, href]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}
+        <a className="nav-login" href="#pricing" onClick={() => setOpen(false)}>診断を始める</a>
+      </nav>
+      <button className="menu-button" type="button" aria-label="メニューを開閉" aria-expanded={open} onClick={() => setOpen(!open)}>
+        <span /><span /><span />
+      </button>
+    </header>
   );
 }
