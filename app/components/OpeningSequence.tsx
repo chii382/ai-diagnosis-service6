@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { IntroGate } from "./IntroGate";
 
 const prologue = `あなたは今の自分が、好きですか。
@@ -14,8 +14,23 @@ const prologue = `あなたは今の自分が、好きですか。
 ——その扉、そっと開けてみませんか。`;
 
 export function OpeningSequence() {
-  const [phase, setPhase] = useState<"story" | "gate">("story");
+  const [phase, setPhase] = useState<"checking" | "story" | "gate" | "done">("checking");
   const [characterCount, setCharacterCount] = useState(0);
+  const openingDecisionMade = useRef(false);
+
+  useEffect(() => {
+    if (openingDecisionMade.current) return;
+    openingDecisionMade.current = true;
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("skipOpening") === "1") {
+      url.searchParams.delete("skipOpening");
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash || "#top"}`);
+      setPhase("done");
+      window.requestAnimationFrame(() => document.getElementById("top")?.scrollIntoView({ block: "start" }));
+      return;
+    }
+    setPhase("story");
+  }, []);
 
   useEffect(() => {
     if (phase !== "story") return;
@@ -44,6 +59,7 @@ export function OpeningSequence() {
   }, [characterCount, phase]);
 
   if (phase === "gate") return <IntroGate />;
+  if (phase === "checking" || phase === "done") return null;
 
   return (
     <section className="opening-story" aria-label={prologue}>

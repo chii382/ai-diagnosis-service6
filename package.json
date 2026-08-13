@@ -10,13 +10,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.116.0",
+    "@auth/mongodb-adapter": "^3.11.3",
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.5.0",
     "@mui/material": "^6.5.0",
     "@mui/material-nextjs": "^6.5.0",
+    "mongodb": "^7.5.0",
     "next": "15.5.22",
+    "next-auth": "5.0.0-beta.32",
     "react": "19.1.0",
     "react-dom": "19.1.0"
   },

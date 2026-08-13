@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
 import "./globals.css";
 import { Providers } from "./providers";
+import { GlobalBusyIndicator } from "./components/GlobalBusyIndicator";
 
 export const metadata: Metadata = {
   title: "AI自分探しサービス | 5問で見つかる、本当の自分",
@@ -18,10 +19,10 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, them
 
 export default function RootLayout({ children }: Readonly<{ children: ReactNode }>) {
   return (
-    <html lang="ja">
+    <html lang="ja" suppressHydrationWarning>
       <body>
         <a href="#main-content" className="skip-link">本文へ移動</a>
-        <Providers>{children}</Providers>
+        <Providers><GlobalBusyIndicator />{children}</Providers>
       </body>
     </html>
   );

@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { useSession, signOut } from "next-auth/react";
+import { setGlobalBusy } from "./GlobalBusyIndicator";
 
 const links = [
   ["特徴", "#features"],
@@ -12,6 +14,20 @@ const links = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const { status } = useSession();
+  const loggedIn = status === "authenticated";
+
+  const logout = async () => {
+    if (!window.confirm("ログアウトします。よろしいですか？")) return;
+    setOpen(false);
+    setGlobalBusy(true);
+    try {
+      await signOut({ redirect: false });
+      window.location.assign("/?skipOpening=1#top");
+    } catch {
+      setGlobalBusy(false);
+    }
+  };
 
   return (
     <header className="site-header">
@@ -21,7 +37,17 @@ export function Header() {
       </a>
       <nav className={open ? "nav is-open" : "nav"} aria-label="メインナビゲーション">
         {links.map(([label, href]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}
-        <a className="nav-login" href="#pricing" onClick={() => setOpen(false)}>診断を始める</a>
+        <a className="nav-start" href="#pricing" onClick={() => setOpen(false)}>診断を始める</a>
+        {loggedIn ? (
+          <>
+            <a className="nav-dashboard" href="/dashboard" onClick={() => setOpen(false)}>ダッシュボードへ</a>
+            <button className="nav-logout" type="button" onClick={() => void logout()}>ログアウト</button>
+          </>
+        ) : status === "unauthenticated" ? (
+          <a className="nav-login" href="/auth/signin" onClick={() => setOpen(false)}>ログイン</a>
+        ) : (
+          <span className="nav-session-loading" aria-label="ログイン状態を確認中" />
+        )}
       </nav>
       <button className="menu-button" type="button" aria-label="メニューを開閉" aria-expanded={open} onClick={() => setOpen(!open)}>
         <span /><span /><span />
