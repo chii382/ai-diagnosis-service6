@@ -16,7 +16,7 @@ export function PricingSection() {
           <article className="plan-card glass-card" id="free-plan">
             <h3>無料プラン</h3><p className="price"><small>¥</small>0</p><p className="plan-lead">少しずつ自分を知る</p>
             <List items={free} />
-            <DiagnosisCta variant="light" comingSoon>無料で少しずつ始めてみる</DiagnosisCta>
+            <DiagnosisCta variant="light">無料で少しずつ始めてみる</DiagnosisCta>
           </article>
           <article className="plan-card paid-card" id="paid-plan">
             <span className="recommend">おすすめ</span>

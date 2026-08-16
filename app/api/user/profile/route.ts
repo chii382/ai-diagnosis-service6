@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId, type Filter } from "mongodb";
 import { NextResponse } from "next/server";
+import { currentStatusOptions, naturalStrengthOptions, repeatedRoleOptions, selfDiscoveryGoalOptions, stressfulSituationOptions } from "@/lib/profile-options";
 
 type UserDocument = {
   _id: ObjectId;
@@ -13,6 +14,13 @@ type UserDocument = {
   ageGroup?: string | null;
   occupation?: string | null;
   bio?: string | null;
+  currentStatus?: string | null;
+  currentActivity?: string | null;
+  repeatedRoles?: string[] | null;
+  naturalStrengths?: string[] | null;
+  stressfulSituations?: string[] | null;
+  selfDiscoveryGoal?: string | null;
+  currentConcern?: string | null;
   emailVerified?: Date | null;
   createdAt?: Date;
   updatedAt?: Date;
@@ -20,11 +28,24 @@ type UserDocument = {
 
 const allowedGenders = ["未回答", "女性", "男性", "ノンバイナリー", "その他"];
 const allowedAgeGroups = ["未回答", "10代", "20代", "30代", "40代", "50代", "60代以上"];
-const allowedOccupations = ["未回答", "会社員", "公務員", "経営者・役員", "自営業・フリーランス", "学生", "主婦・主夫", "パート・アルバイト", "求職中", "その他"];
+function legacyStatus(occupation: string | null | undefined) {
+  if (occupation === "学生") return "学生・学びの期間";
+  if (["会社員", "公務員", "パート・アルバイト"].includes(occupation ?? "")) return "会社員・組織で働いている";
+  if (occupation === "経営者・役員") return "管理職・リーダー";
+  if (occupation === "自営業・フリーランス") return "フリーランス・経営者";
+  if (occupation === "主婦・主夫") return "家事・育児・介護などが生活の中心";
+  if (occupation === "求職中") return "転職・休職・方向転換の途中";
+  return "未回答";
+}
 
 function readField(body: object, key: string, maxLength: number) {
   if (!(key in body)) return "";
   return String((body as Record<string, unknown>)[key] ?? "").trim().slice(0, maxLength + 1);
+}
+
+function readStringArray(body: object, key: string) {
+  const value = (body as Record<string, unknown>)[key];
+  return Array.isArray(value) ? value.map((item) => String(item).trim()) : [];
 }
 
 function getUserFilter(id: string | undefined, email: string | null | undefined): Filter<UserDocument> | null {
@@ -69,6 +90,13 @@ export async function GET() {
       ageGroup: user.ageGroup ?? "未回答",
       occupation: user.occupation ?? "未回答",
       bio: user.bio ?? "",
+      currentStatus: user.currentStatus ?? legacyStatus(user.occupation),
+      currentActivity: user.currentActivity ?? "",
+      repeatedRoles: user.repeatedRoles ?? [],
+      naturalStrengths: user.naturalStrengths ?? [],
+      stressfulSituations: user.stressfulSituations ?? [],
+      selfDiscoveryGoal: user.selfDiscoveryGoal ?? "未回答",
+      currentConcern: user.currentConcern ?? user.bio ?? "",
       createdAt: user.createdAt ?? null,
       updatedAt: user.updatedAt ?? null,
     });
@@ -102,13 +130,23 @@ export async function PUT(request: Request) {
     }
     const gender = readField(body, "gender", 30) || "未回答";
     const ageGroup = readField(body, "ageGroup", 20) || "未回答";
-    const occupation = readField(body, "occupation", 50) || "未回答";
-    const bio = readField(body, "bio", 500);
+    const currentStatus = readField(body, "currentStatus", 50) || "未回答";
+    const currentActivity = readField(body, "currentActivity", 200);
+    const repeatedRoles = readStringArray(body, "repeatedRoles");
+    const naturalStrengths = readStringArray(body, "naturalStrengths");
+    const stressfulSituations = readStringArray(body, "stressfulSituations");
+    const selfDiscoveryGoal = readField(body, "selfDiscoveryGoal", 100) || "未回答";
+    const currentConcern = readField(body, "currentConcern", 500);
     const image = readField(body, "image", 1_500_000);
-    if (!allowedGenders.includes(gender) || !allowedAgeGroups.includes(ageGroup) || !allowedOccupations.includes(occupation)) {
+    if (!allowedGenders.includes(gender) || !allowedAgeGroups.includes(ageGroup) || !currentStatusOptions.includes(currentStatus as typeof currentStatusOptions[number]) || !selfDiscoveryGoalOptions.includes(selfDiscoveryGoal as typeof selfDiscoveryGoalOptions[number])) {
       return NextResponse.json({ error: "選択項目に不正な値があります。" }, { status: 400 });
     }
-    if (bio.length > 500) return NextResponse.json({ error: "自由入力は500文字以内で入力してください。" }, { status: 400 });
+    const hasInvalidMultiChoice = repeatedRoles.length > 2 || naturalStrengths.length > 2 || stressfulSituations.length > 2
+      || repeatedRoles.some((value) => !repeatedRoleOptions.includes(value as typeof repeatedRoleOptions[number]))
+      || naturalStrengths.some((value) => !naturalStrengthOptions.includes(value as typeof naturalStrengthOptions[number]))
+      || stressfulSituations.some((value) => !stressfulSituationOptions.includes(value as typeof stressfulSituationOptions[number]));
+    if (hasInvalidMultiChoice) return NextResponse.json({ error: "複数選択は各項目2つまで、表示された選択肢から選んでください。" }, { status: 400 });
+    if (currentActivity.length > 200 || currentConcern.length > 500) return NextResponse.json({ error: "自由記述の文字数が上限を超えています。" }, { status: 400 });
     if (image && !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(image) && !/^https:\/\//.test(image)) {
       return NextResponse.json({ error: "プロフィール画像の形式が不正です。" }, { status: 400 });
     }
@@ -122,14 +160,14 @@ export async function PUT(request: Request) {
     const client = await clientPromise;
     const user = await client.db().collection<UserDocument>("users").findOneAndUpdate(
       filter,
-      { $set: { name, gender, ageGroup, occupation, bio, image, updatedAt: new Date() }, $setOnInsert: { plan: "free" } },
+      { $set: { name, gender, ageGroup, currentStatus, currentActivity, repeatedRoles, naturalStrengths, stressfulSituations, selfDiscoveryGoal, currentConcern, image, updatedAt: new Date() }, $setOnInsert: { plan: "free" } },
       { returnDocument: "after" },
     );
     if (!user) {
       return NextResponse.json({ error: "ユーザーが見つかりません。" }, { status: 404 });
     }
 
-    return NextResponse.json({ id: user._id.toString(), name: user.name, image: user.image, gender: user.gender, ageGroup: user.ageGroup, occupation: user.occupation, bio: user.bio, plan: user.plan ?? "free" });
+    return NextResponse.json({ id: user._id.toString(), name: user.name, image: user.image, gender: user.gender, ageGroup: user.ageGroup, currentStatus: user.currentStatus, currentActivity: user.currentActivity, repeatedRoles: user.repeatedRoles, naturalStrengths: user.naturalStrengths, stressfulSituations: user.stressfulSituations, selfDiscoveryGoal: user.selfDiscoveryGoal, currentConcern: user.currentConcern, plan: user.plan ?? "free" });
   } catch (error) {
     return errorResponse(error);
   }

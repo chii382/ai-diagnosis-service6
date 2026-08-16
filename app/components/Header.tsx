@@ -37,7 +37,7 @@ export function Header() {
       </a>
       <nav className={open ? "nav is-open" : "nav"} aria-label="メインナビゲーション">
         {links.map(([label, href]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}
-        <a className="nav-start" href="#pricing" onClick={() => setOpen(false)}>診断を始める</a>
+        <a className="nav-start" href="#final-cta" onClick={() => setOpen(false)}>診断を始める</a>
         {loggedIn ? (
           <>
             <a className="nav-dashboard" href="/dashboard" onClick={() => setOpen(false)}>ダッシュボードへ</a>

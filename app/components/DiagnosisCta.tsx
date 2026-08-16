@@ -1,9 +1,14 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { setGlobalBusy } from "./GlobalBusyIndicator";
 
 export function DiagnosisCta({ children, variant = "primary", paid = false, comingSoon = false }: { children: ReactNode; variant?: "light" | "primary" | "gold"; paid?: boolean; comingSoon?: boolean }) {
   const [showComingSoon, setShowComingSoon] = useState(false);
+  const { status } = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     if (!showComingSoon) return;
@@ -39,8 +44,13 @@ export function DiagnosisCta({ children, variant = "primary", paid = false, comi
     target?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
+  const startFreePlan = () => {
+    setGlobalBusy(true);
+    router.push(status === "authenticated" ? "/dashboard" : "/auth/signin?callbackUrl=%2Fdashboard");
+  };
+
   return (
-    <button type="button" className={`crystal-button ${variant}`} onClick={scrollToPlan}>
+    <button type="button" className={`crystal-button ${variant}`} disabled={!paid && status === "loading"} onClick={paid ? scrollToPlan : startFreePlan}>
       <span aria-hidden="true">✦</span>{children}
     </button>
   );

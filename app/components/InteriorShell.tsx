@@ -9,7 +9,7 @@ type InteriorShellProps = {
   description?: string;
   wide?: boolean;
   actions?: ReactNode;
-  variant?: "default" | "login" | "dashboard";
+  variant?: "default" | "login" | "dashboard" | "profile" | "diagnosis" | "diagnosis-history" | "diagnosis-detail";
 };
 
 export function InteriorShell({ children, eyebrow, title, description, wide = false, actions, variant = "default" }: InteriorShellProps) {

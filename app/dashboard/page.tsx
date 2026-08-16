@@ -9,6 +9,8 @@ import clientPromise from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import { Chip, Divider } from "@mui/material";
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import HistoryIcon from "@mui/icons-material/History";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -21,7 +23,7 @@ export default async function DashboardPage() {
   const details = [
     ["性別", member?.gender || "未回答"],
     ["年代", member?.ageGroup || "未回答"],
-    ["職業", member?.occupation || "未回答"],
+    ["現在の状況", member?.currentStatus || member?.occupation || "未回答"],
   ];
 
   return (
@@ -38,12 +40,20 @@ export default async function DashboardPage() {
               </Box>
             </Stack>
             <Divider className="dashboard-divider" sx={{ my: 4 }} />
+            <Box className="dashboard-profile-prompt">
+              <Box>
+                <Typography component="h3">より正確で詳細な分析のために</Typography>
+                <Typography>プロフィールを登録・充実させてください。あなたの状況や経験を反映した、より深いAI分析が可能になります。</Typography>
+              </Box>
+              <Button className="dashboard-profile-prompt-action" href="/profile" variant="contained" startIcon={<AccountCircleIcon />}>プロフィールを登録・編集</Button>
+            </Box>
             <Box className="dashboard-profile-grid">
               {details.map(([label, value]) => <div className="dashboard-profile-item" key={label}><small>{label}</small><strong>{value}</strong></div>)}
             </Box>
-            {member?.bio && <Box className="dashboard-bio"><Typography component="h3">あなたについて</Typography><Typography>{member.bio}</Typography></Box>}
+            {(member?.currentActivity || member?.currentConcern || member?.bio) && <Box className="dashboard-bio"><Typography component="h3">現在の活動・テーマ</Typography><Typography>{[member?.currentActivity, member?.currentConcern || member?.bio].filter(Boolean).join("\n")}</Typography></Box>}
             <Stack className="dashboard-actions" direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mt: 5 }}>
-              <Button className="dashboard-primary-action" href="/profile" variant="contained" startIcon={<AccountCircleIcon />}>プロフィールを編集</Button>
+              <Button className="dashboard-primary-action dashboard-diagnosis-action" href="/diagnosis" variant="contained" startIcon={<AutoAwesomeIcon />}>AI自分探し</Button>
+              <Button href="/diagnosis/history" variant="outlined" startIcon={<HistoryIcon />}>診断履歴</Button>
               <Button component="a" href="/?skipOpening=1#top" variant="outlined" startIcon={<HomeIcon />}>トップページ</Button>
             </Stack>
           </CardContent>

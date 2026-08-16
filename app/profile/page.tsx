@@ -9,11 +9,11 @@ export default async function ProfilePage() {
   if (!session?.user) redirect("/auth/signin?callbackUrl=/profile");
 
   return (
-    <InteriorShell eyebrow="YOUR PROFILE" title="プロフィール" description="あなたらしさを表す、基本情報を整えます。">
+    <InteriorShell variant="profile" wide eyebrow="YOUR PROFILE" title="プロフィール" description="あなたらしさを表す、基本情報を整えます。">
         <Card className="sanctuary-card">
           <CardContent sx={{ p: { xs: 3, sm: 5 } }}>
-            <Typography variant="h5" component="h2" className="card-title" textAlign="center" gutterBottom>会員情報</Typography>
-            <Typography color="text.secondary" textAlign="center" sx={{ mb: 4 }}>表示名の確認と変更ができます。</Typography>
+            <Typography variant="h5" component="h2" className="card-title" textAlign="center" gutterBottom>会員情報と自己理解プロフィール</Typography>
+            <Typography color="text.secondary" textAlign="center" sx={{ mb: 4 }}>AIがあなたをより深く理解するための背景情報を整えます。</Typography>
             <ProfileForm />
           </CardContent>
         </Card>
