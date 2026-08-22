@@ -5,7 +5,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import { Alert, Box, Button, Collapse, LinearProgress, Stack, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { diagnosisQuestions } from "@/lib/diagnosis-questions";
 import { setGlobalBusy } from "@/app/components/GlobalBusyIndicator";
 
@@ -17,6 +17,11 @@ export function DiagnosisForm() {
   const [loading, setLoading] = useState(false);
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
   const answeredCount = useMemo(() => diagnosisQuestions.filter((question) => selections[question.id]).length, [selections]);
+
+  useEffect(() => {
+    // AI分析中の待ち時間と重ねて結果画面を準備し、完了後の画面遷移を速くする。
+    router.prefetch("/diagnosis/result");
+  }, [router]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -57,7 +62,7 @@ export function DiagnosisForm() {
           {question.options.map((option, optionIndex) => {
             const selected = selections[question.id] === option.id;
             return <button type="button" className={`diagnosis-option${selected ? " is-selected" : ""}`} aria-pressed={selected} key={option.id} onClick={() => { setSelections((current) => ({ ...current, [question.id]: option.id })); setOpenQuestion(null); }}>
-              <span className="diagnosis-option-image" role="img" aria-label={option.label} style={{ backgroundImage: `url(${question.image})`, backgroundPosition: `${(optionIndex % 3) * 50}% ${Math.floor(optionIndex / 3) * 100}%` }} />
+              <span className="diagnosis-option-image" role="img" aria-label={option.label} style={{ backgroundImage: `url(${question.image})`, backgroundPosition: `${(optionIndex % 3) * 50}% ${optionIndex < 3 ? 13.636 : 86.364}%` }} />
               <span className="diagnosis-option-copy"><strong>{option.id}</strong><span>{option.label}</span>{selected && <CheckCircleIcon aria-label="選択中" />}</span>
             </button>;
           })}

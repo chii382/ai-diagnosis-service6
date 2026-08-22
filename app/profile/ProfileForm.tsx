@@ -44,6 +44,7 @@ export function ProfileForm() {
 
   const save = async (event: FormEvent) => {
     event.preventDefault(); setSaving(true); setGlobalBusy(true); setMessage(null);
+    let navigating = false;
     try {
       const response = await fetch("/api/user/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
       const data = await readJson(response); if (!response.ok) throw new Error(data.error);
@@ -51,10 +52,11 @@ export function ProfileForm() {
       await update({ name: data.name, image: data.image });
       setSavedForm(form);
       setGlobalBusy(true);
+      navigating = true;
       if (window.history.length > 1) router.back();
       else router.replace("/dashboard");
     } catch (error) { setMessage({ type: "error", text: error instanceof Error ? error.message : "保存に失敗しました。" }); }
-    finally { setSaving(false); setGlobalBusy(false); }
+    finally { setSaving(false); if (!navigating) setGlobalBusy(false); }
   };
 
   const hasUnsavedChanges = JSON.stringify(form) !== JSON.stringify(savedForm);

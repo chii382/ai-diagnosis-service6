@@ -1,6 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
+import DashboardRoundedIcon from "@mui/icons-material/DashboardRounded";
+import { Button } from "@mui/material";
 import type { ReactNode } from "react";
+import { SessionStatusBadge } from "./SessionStatusBadge";
 
 type InteriorShellProps = {
   children: ReactNode;
@@ -9,10 +12,11 @@ type InteriorShellProps = {
   description?: string;
   wide?: boolean;
   actions?: ReactNode;
+  dashboardLink?: boolean;
   variant?: "default" | "login" | "dashboard" | "profile" | "diagnosis" | "diagnosis-history" | "diagnosis-detail";
 };
 
-export function InteriorShell({ children, eyebrow, title, description, wide = false, actions, variant = "default" }: InteriorShellProps) {
+export function InteriorShell({ children, eyebrow, title, description, wide = false, actions, dashboardLink = false, variant = "default" }: InteriorShellProps) {
   return (
     <div className={`interior-page interior-page--${variant}`}>
       <header className="interior-header">
@@ -20,7 +24,7 @@ export function InteriorShell({ children, eyebrow, title, description, wide = fa
           <Image className="brand-emblem" src="/images/brand-emblem-gold.png" alt="" width={64} height={64} priority />
           <span><strong>AI自分探し</strong><small>サービス</small></span>
         </Link>
-        <div className="interior-header-actions">{actions}<Link href="/?skipOpening=1#top" prefetch={false}>トップへ</Link></div>
+        <div className="interior-header-actions"><SessionStatusBadge />{dashboardLink && <Button component={Link} href="/dashboard" variant="contained" startIcon={<DashboardRoundedIcon />}>ダッシュボードへ</Button>}{actions}<Link className="interior-top-link" href="/?skipOpening=1#top" prefetch={false}>トップへ</Link></div>
       </header>
       <main id="main-content" className={`interior-main${wide ? " is-wide" : ""}`}>
         <div className="interior-heading">

@@ -1,7 +1,16 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
-  reactStrictMode: true,
+  // APIを呼ぶuseEffectの開発時二重実行を避ける。本番の動作には影響しない。
+  reactStrictMode: false,
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+  webpack: { treeshake: { removeDebugLogging: true } },
+});

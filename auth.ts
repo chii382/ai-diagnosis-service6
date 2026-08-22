@@ -12,7 +12,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const client = await clientPromise;
       await client.db().collection("users").updateOne(
         { email: user.email },
-        { $set: { createdAt: new Date(), updatedAt: new Date() } },
+        { $set: { createdAt: new Date(), updatedAt: new Date(), role: "user" } },
       );
     },
     async signIn({ user, account }) {

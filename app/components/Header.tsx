@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
 import { setGlobalBusy } from "./GlobalBusyIndicator";
+import { SessionStatusBadge } from "./SessionStatusBadge";
 
 const links = [
   ["特徴", "#features"],
@@ -40,11 +42,12 @@ export function Header() {
         <a className="nav-start" href="#final-cta" onClick={() => setOpen(false)}>診断を始める</a>
         {loggedIn ? (
           <>
-            <a className="nav-dashboard" href="/dashboard" onClick={() => setOpen(false)}>ダッシュボードへ</a>
+            <SessionStatusBadge compact />
+            <Link className="nav-dashboard" href="/dashboard" onClick={() => setOpen(false)}>ダッシュボードへ</Link>
             <button className="nav-logout" type="button" onClick={() => void logout()}>ログアウト</button>
           </>
         ) : status === "unauthenticated" ? (
-          <a className="nav-login" href="/auth/signin" onClick={() => setOpen(false)}>ログイン</a>
+          <Link className="nav-login" href="/auth/signin" onClick={() => setOpen(false)}>ログイン</Link>
         ) : (
           <span className="nav-session-loading" aria-label="ログイン状態を確認中" />
         )}

@@ -1,10 +1,19 @@
 import { auth } from "@/auth";
 import { ObjectId } from "mongodb";
+import clientPromise from "@/lib/mongodb";
 
 export type Plan = "free" | "paid";
 export type AnswerItem = { questionId: string; question: string; optionId: string; answer: string };
-export type CoreElement = { name: string; tendency: string; evidence: string; behavior: string };
+export type CoreElement = { name: string; tendency: string; evidence?: string; behavior: string };
 export type Confidence = { certain: string[]; hypotheses: string[]; unknown: string[] };
+export type TraitScore = { label: string; score: number };
+export type ValuePriority = { name: string; score: number; insight: string };
+export type PremiumAnalysis = {
+  traitScores: TraitScore[];
+  valuePriorities: ValuePriority[];
+  goodEnvironments: string[];
+  cautionEnvironments: string[];
+};
 export type AnalysisResult = {
   plan: Plan;
   title: string;
@@ -17,6 +26,7 @@ export type AnalysisResult = {
   reflectionQuestions: string[];
   confidence: Confidence;
   message: string;
+  premiumAnalysis?: PremiumAnalysis;
 };
 export type CareerRoadmap = { immediate: string[]; shortTerm: string; midTerm: string; longTerm: string };
 export type DiagnosisData = { id: string; answers: { selections: AnswerItem[]; supplements?: Record<string, string>; profile?: unknown }; result: AnalysisResult; careerRoadmap: CareerRoadmap; plan: Plan; createdAt: string; updatedAt?: string };
@@ -26,6 +36,13 @@ export async function requireDiagnosisUser() {
   if (!session?.user) return null;
   const id = session.user.id;
   return id && ObjectId.isValid(id) ? new ObjectId(id) : null;
+}
+
+export async function requirePaidDiagnosisUser() {
+  const userId = await requireDiagnosisUser();
+  if (!userId) return { authenticated: false as const, paid: false as const, userId: null };
+  const member = await (await clientPromise).db().collection("users").findOne({ _id: userId }, { projection: { plan: 1 } });
+  return { authenticated: true as const, paid: member?.plan === "paid", userId };
 }
 
 type DiagnosisShape = { _id: unknown; answers: unknown; result: unknown; careerRoadmap: unknown; plan?: unknown; createdAt?: Date; updatedAt?: Date };
@@ -44,6 +61,7 @@ export function serializeDiagnosis(doc: DiagnosisShape) {
     reflectionQuestions: source.reflectionQuestions ?? [],
     confidence: source.confidence ?? { certain: [], hypotheses: [], unknown: ["旧形式の診断結果のため、確からしさは記録されていません。"] },
     message: source.message ?? source.advice ?? "この結果を、今の自分と照らし合わせて振り返ってみてください。",
+    premiumAnalysis: source.premiumAnalysis,
   };
   const sourceRoadmap = (doc.careerRoadmap ?? {}) as Partial<CareerRoadmap>;
   const careerRoadmap: CareerRoadmap = {

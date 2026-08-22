@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node --max-http-header-size=65536 ./node_modules/next/dist/bin/next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
@@ -18,12 +18,16 @@
     "@mui/icons-material": "^6.5.0",
     "@mui/material": "^6.5.0",
     "@mui/material-nextjs": "^6.5.0",
+    "@mui/x-data-grid": "^7.29.13",
+    "@sentry/nextjs": "^10.70.0",
     "mongodb": "^7.5.0",
     "mongoose": "^9.9.2",
     "next": "15.5.22",
     "next-auth": "5.0.0-beta.32",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "recharts": "^3.10.1",
+    "stripe": "^22.5.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

@@ -12,7 +12,7 @@ export function Providers({ children }: { children: ReactNode }) {
     <AppRouterCacheProvider options={{ enableCssLayer: true }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider refetchOnWindowFocus={false} refetchInterval={0}>{children}</SessionProvider>
       </ThemeProvider>
     </AppRouterCacheProvider>
   );

@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 export const BUSY_START_EVENT = "sanctuary:busy-start";
 export const BUSY_END_EVENT = "sanctuary:busy-end";
+const BUSY_SAFETY_TIMEOUT_MS = 120000;
 
 export function setGlobalBusy(busy: boolean) {
   window.dispatchEvent(new Event(busy ? BUSY_START_EVENT : BUSY_END_EVENT));
@@ -21,7 +22,9 @@ export function GlobalBusyIndicator() {
       setBusy(true);
       document.documentElement.dataset.busy = "true";
       clearTimeout(safetyTimer);
-      safetyTimer = setTimeout(end, 20000);
+      // AI分析など20秒を超える正常な処理中に、待機表示だけが先に消えないようにする。
+      // 通常は各処理の完了通知または画面遷移で解除され、このタイマーは異常時の保険としてのみ働く。
+      safetyTimer = setTimeout(end, BUSY_SAFETY_TIMEOUT_MS);
     };
     const end = () => {
       setBusy(false);

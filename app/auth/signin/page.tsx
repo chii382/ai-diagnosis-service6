@@ -5,6 +5,7 @@ import { Alert, Button, Card, CardContent, CircularProgress, Typography } from "
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
+import Link from "next/link";
 import { InteriorShell } from "@/app/components/InteriorShell";
 import { setGlobalBusy } from "@/app/components/GlobalBusyIndicator";
 
@@ -21,11 +22,15 @@ function SignInContent() {
   const login = async () => {
     setLoading(true);
     setGlobalBusy(true);
+    let redirectStarted = false;
     try {
       await signIn("google", { redirectTo: callbackUrl });
+      redirectStarted = true;
     } finally {
-      setLoading(false);
-      setGlobalBusy(false);
+      if (!redirectStarted) {
+        setLoading(false);
+        setGlobalBusy(false);
+      }
     }
   };
 
@@ -39,7 +44,7 @@ function SignInContent() {
           <Button fullWidth variant="contained" size="large" startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <GoogleIcon />} onClick={login} disabled={loading}>
             Googleでログイン
           </Button>
-          <Button component="a" href="/?skipOpening=1#top" sx={{ mt: 2 }}>トップページへ戻る</Button>
+          <Button component={Link} href="/?skipOpening=1#top" sx={{ mt: 2 }}>トップページへ戻る</Button>
         </CardContent>
       </Card>
     </InteriorShell>
