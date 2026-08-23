@@ -25,16 +25,24 @@ export default {
       if (trigger === "update" && typeof session?.name === "string") {
         token.name = session.name.slice(0, 100);
       }
-      // Base64画像をJWT Cookieへ入れるとVercelのヘッダー上限を超えるため、絶対に保存しません。
-      // Google等の短いHTTPS画像URLだけは既存のログインアイコン用に維持します。
-      if (typeof token.picture === "string" && (token.picture.startsWith("data:") || token.picture.length > 2048)) {
+      // JWTはCookieとして全リクエストに付与されます。プロフィール画像や大きな任意データは
+      // Vercelのヘッダー上限を超えるため、DBだけに保存してJWTには絶対に残しません。
+      const unsafeToken = token as typeof token & Record<string, unknown>;
+      delete unsafeToken.image;
+      delete unsafeToken.profile;
+      if (typeof token.picture !== "string" || !token.picture.startsWith("https://") || token.picture.length > 2048) {
         delete token.picture;
       }
+      if (typeof token.name === "string") token.name = token.name.slice(0, 100);
       return token;
     },
     session({ session, token }) {
-      if (session.user) session.user.id = (token.id ?? token.sub) as string;
-      if (session.user) session.user.role = token.role === "admin" ? "admin" : "user";
+      if (session.user) {
+        session.user.id = (token.id ?? token.sub) as string;
+        session.user.role = token.role === "admin" ? "admin" : "user";
+        // セッションレスポンスにもDB保存のBase64画像を混入させない。
+        session.user.image = typeof token.picture === "string" ? token.picture : null;
+      }
       return session;
     },
   },
