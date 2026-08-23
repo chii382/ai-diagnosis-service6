@@ -9,19 +9,56 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { diagnosisQuestions } from "@/lib/diagnosis-questions";
 import { setGlobalBusy } from "@/app/components/GlobalBusyIndicator";
 
+const ANALYSIS_STAGES = [
+  { until: 14, label: "回答内容を整理しています" },
+  { until: 34, label: "回答から傾向を読み解いています" },
+  { until: 59, label: "強みと価値観を分析しています" },
+  { until: 78, label: "あなたらしさを言葉にしています" },
+  { until: 92, label: "行動につながるヒントをまとめています" },
+  { until: 100, label: "分析結果を仕上げています" },
+] as const;
+
+function estimateAnalysisProgress(elapsedSeconds: number) {
+  if (elapsedSeconds < 5) return 4 + elapsedSeconds * 2;
+  if (elapsedSeconds < 15) return 14 + (elapsedSeconds - 5) * 2;
+  if (elapsedSeconds < 30) return 34 + (elapsedSeconds - 15) * (25 / 15);
+  if (elapsedSeconds < 45) return 59 + (elapsedSeconds - 30) * (19 / 15);
+  if (elapsedSeconds < 65) return 78 + (elapsedSeconds - 45) * 0.7;
+  if (elapsedSeconds < 90) return 92 + (elapsedSeconds - 65) * 0.2;
+  return 98;
+}
+
 export function DiagnosisForm() {
   const router = useRouter();
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [supplements, setSupplements] = useState<Record<string, string>>({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [analysisElapsedSeconds, setAnalysisElapsedSeconds] = useState(0);
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
   const answeredCount = useMemo(() => diagnosisQuestions.filter((question) => selections[question.id]).length, [selections]);
+  const analysisStage = ANALYSIS_STAGES.find((stage) => analysisProgress < stage.until) ?? ANALYSIS_STAGES[ANALYSIS_STAGES.length - 1];
 
   useEffect(() => {
     // AI分析中の待ち時間と重ねて結果画面を準備し、完了後の画面遷移を速くする。
     router.prefetch("/diagnosis/result");
   }, [router]);
+
+  useEffect(() => {
+    if (!loading) return;
+
+    const startedAt = Date.now();
+    setAnalysisProgress(4);
+    setAnalysisElapsedSeconds(0);
+    const timer = window.setInterval(() => {
+      const elapsedSeconds = (Date.now() - startedAt) / 1000;
+      setAnalysisElapsedSeconds(Math.floor(elapsedSeconds));
+      setAnalysisProgress(Math.round(estimateAnalysisProgress(elapsedSeconds)));
+    }, 500);
+
+    return () => window.clearInterval(timer);
+  }, [loading]);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -31,6 +68,7 @@ export function DiagnosisForm() {
       const response = await fetch("/api/diagnosis", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ selections, supplements }) });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
+      setAnalysisProgress(100);
       sessionStorage.setItem("latestDiagnosis", JSON.stringify(data));
       router.push("/diagnosis/result");
     } catch (cause) {
@@ -39,7 +77,7 @@ export function DiagnosisForm() {
     }
   }
 
-  return <Box component="form" onSubmit={submit}>
+  return <Box component="form" onSubmit={submit} aria-busy={loading}>
     <Stack spacing={2}>
       <Box>
         <Typography textAlign="center" fontWeight={800} color="primary.dark">回答状況 {answeredCount} / {diagnosisQuestions.length}</Typography>
@@ -71,7 +109,35 @@ export function DiagnosisForm() {
         </Collapse>
         {question.supplementLabel && selectedOption && <Box className="diagnosis-supplement"><TextField fullWidth multiline minRows={2} label={question.supplementLabel} placeholder={question.supplementPlaceholder} value={supplements[question.id] ?? ""} onChange={(event) => setSupplements((current) => ({ ...current, [question.id]: event.target.value }))} helperText={`${(supplements[question.id] ?? "").length}/500文字`} slotProps={{ inputLabel: { shrink: true }, htmlInput: { maxLength: 500 } }} /></Box>}
       </Box>})}
-      {loading && <Alert severity="info" icon={false}><LinearProgress sx={{ mb: 1.5 }} /><Typography textAlign="center">AIが回答とプロフィールの共通点を読み解いています…</Typography></Alert>}
+      {loading && <Alert severity="info" icon={false} role="status" aria-live="polite" sx={{ borderRadius: 3, p: { xs: 2, sm: 2.5 } }}>
+        <Stack spacing={1.25}>
+          <Stack direction="row" alignItems="baseline" justifyContent="space-between" gap={2}>
+            <Typography fontWeight={800} color="primary.dark">{analysisStage.label}</Typography>
+            <Typography component="span" fontWeight={800} color="primary.main" sx={{ whiteSpace: "nowrap" }}>{analysisProgress}%</Typography>
+          </Stack>
+          <LinearProgress
+            variant="determinate"
+            value={analysisProgress}
+            aria-label="AI分析の進捗（目安）"
+            sx={{
+              height: 10,
+              borderRadius: 999,
+              bgcolor: "rgba(39, 77, 151, 0.12)",
+              "& .MuiLinearProgress-bar": {
+                borderRadius: 999,
+                background: "linear-gradient(90deg, #284f9f 0%, #7551b8 58%, #d8a92f 100%)",
+              },
+            }}
+          />
+          <Typography variant="body2" textAlign="center" color="text.secondary">
+            {analysisElapsedSeconds >= 90
+              ? "分析を継続しています。回答内容は保持されていますので、このままお待ちください。"
+              : analysisElapsedSeconds >= 45
+                ? "詳しい結果を丁寧にまとめています。画面を閉じずにお待ちください。"
+                : "回答とプロフィールをもとに分析しています。進捗率は目安です。"}
+          </Typography>
+        </Stack>
+      </Alert>}
       <Button className="diagnosis-submit-action" size="large" type="submit" variant="contained" disabled={loading || answeredCount !== diagnosisQuestions.length} startIcon={<AutoAwesomeIcon />}>AI自分探しを始める</Button>
     </Stack>
   </Box>;

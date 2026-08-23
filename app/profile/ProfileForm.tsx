@@ -49,12 +49,16 @@ export function ProfileForm() {
       const response = await fetch("/api/user/profile", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
       const data = await readJson(response); if (!response.ok) throw new Error(data.error);
       setProfile((current) => current ? { ...current, ...data } : current);
-      await update({ name: data.name, image: data.image });
+      // 画像本体はDBへ保存済みです。Base64画像を認証Cookieへ入れると
+      // Vercelのヘッダー上限を超えるため、セッションには小さな名前だけを同期します。
+      await update({ name: data.name });
       setSavedForm(form);
       setGlobalBusy(true);
       navigating = true;
-      if (window.history.length > 1) router.back();
-      else router.replace("/dashboard");
+      // router.back() は保存前のダッシュボードを履歴キャッシュから復元する場合があるため、
+      // 保存後は常に最新のServer Componentを取得する。
+      router.replace("/dashboard");
+      router.refresh();
     } catch (error) { setMessage({ type: "error", text: error instanceof Error ? error.message : "保存に失敗しました。" }); }
     finally { setSaving(false); if (!navigating) setGlobalBusy(false); }
   };

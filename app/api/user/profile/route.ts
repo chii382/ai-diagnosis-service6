@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import clientPromise from "@/lib/mongodb";
 import { ObjectId, type Filter } from "mongodb";
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { currentStatusOptions, naturalStrengthOptions, repeatedRoleOptions, selfDiscoveryGoalOptions, stressfulSituationOptions } from "@/lib/profile-options";
 
@@ -166,6 +167,10 @@ export async function PUT(request: Request) {
     if (!user) {
       return NextResponse.json({ error: "ユーザーが見つかりません。" }, { status: 404 });
     }
+
+    // 保存前に先読みされた画面を再利用せず、最新プロフィールをDBから取得させる。
+    revalidatePath("/dashboard");
+    revalidatePath("/profile");
 
     return NextResponse.json({ id: user._id.toString(), name: user.name, image: user.image, gender: user.gender, ageGroup: user.ageGroup, currentStatus: user.currentStatus, currentActivity: user.currentActivity, repeatedRoles: user.repeatedRoles, naturalStrengths: user.naturalStrengths, stressfulSituations: user.stressfulSituations, selfDiscoveryGoal: user.selfDiscoveryGoal, currentConcern: user.currentConcern, plan: user.plan ?? "free" });
   } catch (error) {

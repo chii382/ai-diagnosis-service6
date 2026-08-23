@@ -48,6 +48,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       rows: rows.map((user) => ({ ...user, id: String(user._id), _id: undefined, role: effectiveRole(user) })),
       total,
+      currentUserId: String(access.member._id),
     });
   } catch (error) {
     await reportAdminError(error, "ユーザー一覧取得");
@@ -62,6 +63,9 @@ export async function PATCH(request: Request) {
     const body = await request.json() as { userId?: string; role?: string };
     if (!body.userId || !ObjectId.isValid(body.userId) || !["admin", "user"].includes(body.role ?? "")) {
       return NextResponse.json({ error: "ユーザーIDまたはロールが不正です。" }, { status: 400 });
+    }
+    if (String(access.member._id) === body.userId) {
+      return NextResponse.json({ error: "自分自身のロールは変更できません。" }, { status: 403 });
     }
     const db = (await clientPromise).db();
     const target = await db.collection("users").findOne({ _id: new ObjectId(body.userId) });
@@ -84,6 +88,9 @@ export async function DELETE(request: Request) {
     const body = await request.json() as { userId?: string };
     if (!body.userId || !ObjectId.isValid(body.userId)) {
       return NextResponse.json({ error: "ユーザーIDが不正です。" }, { status: 400 });
+    }
+    if (String(access.member._id) === body.userId) {
+      return NextResponse.json({ error: "自分自身のアカウントは削除できません。" }, { status: 403 });
     }
     const db = (await clientPromise).db();
     const userId = new ObjectId(body.userId);

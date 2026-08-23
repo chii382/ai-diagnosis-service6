@@ -13,6 +13,7 @@ type UserDetail = { user: UserRow };
 export default function AdminUsersPage() {
   const [rows, setRows] = useState<UserRow[]>([]);
   const [total, setTotal] = useState(0);
+  const [currentUserId, setCurrentUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -31,25 +32,27 @@ export default function AdminUsersPage() {
       const response = await fetch(`/api/admin/users?${params}`);
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
-      setRows(data.rows); setTotal(data.total);
+      setRows(data.rows); setTotal(data.total); setCurrentUserId(data.currentUserId || "");
     } catch (error) { setMessage({ severity: "error", text: error instanceof Error ? error.message : "取得に失敗しました。" }); }
     finally { setLoading(false); }
   }, [pagination, debouncedSearch, role]);
   useEffect(() => { void load(); }, [load]);
 
   const changeRole = useCallback(async (userId: string, nextRole: "admin" | "user") => {
+    if (userId === currentUserId) { setMessage({ severity: "error", text: "自分自身のロールは変更できません。" }); return; }
     const response = await fetch("/api/admin/users", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId, role: nextRole }) });
     const data = await response.json();
     if (!response.ok) { setMessage({ severity: "error", text: data.error }); return; }
     setMessage({ severity: "success", text: "ロールを変更しました。対象ユーザーの画面更新後に反映されます。" });
     void load();
-  }, [load]);
+  }, [currentUserId, load]);
   const showDetail = useCallback(async (userId: string) => {
     try { const response = await fetch(`/api/admin/users?userId=${userId}`); const data = await response.json(); if (!response.ok) throw new Error(data.error); setDetail(data); }
     catch (error) { setMessage({ severity: "error", text: error instanceof Error ? error.message : "詳細を取得できませんでした。" }); }
   }, []);
   const deleteUser = useCallback(async () => {
     if (!deleteTarget) return;
+    if (deleteTarget.id === currentUserId) { setMessage({ severity: "error", text: "自分自身のアカウントは削除できません。" }); setDeleteTarget(null); return; }
     setDeleting(true);
     try {
       const response = await fetch("/api/admin/users", { method: "DELETE", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ userId: deleteTarget.id }) });
@@ -63,15 +66,15 @@ export default function AdminUsersPage() {
     } finally {
       setDeleting(false);
     }
-  }, [deleteTarget, load]);
+  }, [currentUserId, deleteTarget, load]);
 
   const columns = useMemo<GridColDef<UserRow>[]>(() => [
     { field: "user", headerName: "ユーザー", flex: 1.4, minWidth: 240, sortable: false, renderCell: ({ row }) => <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: "100%", height: "100%", minWidth: 0 }}><Avatar src={row.image} alt={row.name || "ユーザー"} sx={{ flexShrink: 0 }} /><Box sx={{ display: "flex", flexDirection: "column", justifyContent: "center", minWidth: 0 }}><Typography fontWeight={700} variant="body2" noWrap sx={{ lineHeight: 1.35 }}>{row.name || "名前未設定"}</Typography><Typography variant="caption" color="text.secondary" noWrap sx={{ lineHeight: 1.35, mt: .4 }}>{row.email || "メール未設定"}</Typography></Box></Stack> },
-    { field: "role", headerName: "ロール", width: 150, renderCell: ({ row }) => <Select size="small" value={row.role} onChange={(event) => void changeRole(row.id, event.target.value as "admin" | "user")} aria-label={`${row.name || row.email}のロール`}><MenuItem value="user">user</MenuItem><MenuItem value="admin">admin</MenuItem></Select> },
+    { field: "role", headerName: "ロール", width: 150, renderCell: ({ row }) => <Select size="small" value={row.role} disabled={row.id === currentUserId} title={row.id === currentUserId ? "自分自身のロールは変更できません" : undefined} onChange={(event) => void changeRole(row.id, event.target.value as "admin" | "user")} aria-label={`${row.name || row.email}のロール`}><MenuItem value="user">user</MenuItem><MenuItem value="admin">admin</MenuItem></Select> },
     { field: "plan", headerName: "プラン", width: 100, renderCell: ({ value }) => <Chip size="small" label={value === "paid" ? "有料" : "無料"} color={value === "paid" ? "secondary" : "default"} /> },
     { field: "actions", headerName: "詳細", width: 158, sortable: false, renderCell: ({ row }) => <Button className="admin-detail-button" size="small" variant="contained" startIcon={<VisibilityIcon />} onClick={() => void showDetail(row.id)} aria-label={`${row.name || row.email || "ユーザー"}の詳細を表示`}>詳細表示</Button> },
-    { field: "delete", headerName: "削除", width: 158, sortable: false, renderCell: ({ row }) => <Button className="admin-delete-button" size="small" variant="contained" startIcon={<DeleteOutlineIcon />} onClick={() => setDeleteTarget(row)} aria-label={`${row.name || row.email || "ユーザー"}を削除`}>削除</Button> },
-  ], [changeRole, showDetail]);
+    { field: "delete", headerName: "削除", width: 158, sortable: false, renderCell: ({ row }) => <Button className="admin-delete-button" size="small" variant="contained" startIcon={<DeleteOutlineIcon />} disabled={row.id === currentUserId} title={row.id === currentUserId ? "自分自身のアカウントは削除できません" : undefined} onClick={() => setDeleteTarget(row)} aria-label={`${row.name || row.email || "ユーザー"}を削除`}>削除</Button> },
+  ], [changeRole, currentUserId, showDetail]);
 
   return <Stack spacing={3}>
     <Box><Typography className="admin-eyebrow">MEMBER DIRECTORY</Typography><Stack direction="row" gap={1} alignItems="center"><ManageAccountsIcon color="primary" /><Typography variant="h4" component="h1">ユーザー管理</Typography></Stack><Typography color="text.secondary">登録ユーザーの検索、利用状況確認、ロール変更ができます。</Typography></Box>
@@ -89,7 +92,7 @@ export default function AdminUsersPage() {
       ["診断回数", `${detail.user.diagnosisCount ?? 0}回`],
       ["診断最終到達率", `${detail.user.latestDiagnosisProgress ?? 0}%`],
     ].map(([label, value]) => <Box key={label} sx={{ position: "relative", minWidth: 0, minHeight: 72, py: 1.25, pr: 1.75, pl: 2.25, overflow: "hidden", border: "1px solid rgba(94,128,180,.24)", borderRadius: 2.5, bgcolor: "rgba(255,255,255,.7)", boxShadow: "0 5px 14px rgba(16,44,104,.045)", "&::before": { content: '""', position: "absolute", inset: "10px auto 10px 0", width: 4, borderRadius: "0 4px 4px 0", bgcolor: "secondary.main" } }}><Typography variant="caption" color="text.secondary" fontWeight={800} letterSpacing=".04em">{label}</Typography><Typography title={String(value)} noWrap sx={{ mt: .25, minWidth: 0, fontSize: { xs: 15, sm: 16 }, lineHeight: 1.4, textOverflow: "ellipsis" }} fontWeight={800}>{value}</Typography></Box>)}</Box>}</DialogContent><DialogActions sx={{ px: 3.5, py: 1.5, borderTop: "1px solid", borderColor: "divider" }}><Button onClick={() => setDetail(null)}>閉じる</Button></DialogActions></Dialog>
-    <Dialog open={Boolean(deleteTarget)} onClose={deleting ? undefined : () => setDeleteTarget(null)} maxWidth="xs" fullWidth><DialogTitle fontWeight={800}>ユーザー削除の確認</DialogTitle><DialogContent><Typography>このユーザーを削除します。よろしいですか？</Typography>{deleteTarget && <Typography variant="body2" color="text.secondary" mt={1}>{deleteTarget.name || "名前未設定"}（{deleteTarget.email || "メール未設定"}）</Typography>}</DialogContent><DialogActions sx={{ px: 3, pb: 2.5 }}><Button onClick={() => setDeleteTarget(null)} disabled={deleting}>キャンセル</Button><Button className="admin-delete-confirm-button" variant="contained" onClick={() => void deleteUser()} disabled={deleting}>{deleting ? "削除中…" : "OK"}</Button></DialogActions></Dialog>
+    <Dialog open={Boolean(deleteTarget)} onClose={deleting ? undefined : () => setDeleteTarget(null)} maxWidth="xs" fullWidth><DialogTitle fontWeight={800}>ユーザー削除の確認</DialogTitle><DialogContent><Typography color={deleteTarget?.plan === "paid" ? "error.main" : "text.primary"} fontWeight={deleteTarget?.plan === "paid" ? 800 : 400}>{deleteTarget?.plan === "paid" ? "このユーザーは有料プラン使用中です。本当に削除してよろしいですか？" : "このユーザーを削除します。よろしいですか？"}</Typography>{deleteTarget && <Typography variant="body2" color="text.secondary" mt={1}>{deleteTarget.name || "名前未設定"}（{deleteTarget.email || "メール未設定"}）</Typography>}</DialogContent><DialogActions sx={{ px: 3, pb: 2.5 }}><Button onClick={() => setDeleteTarget(null)} disabled={deleting}>キャンセル</Button><Button className="admin-delete-confirm-button" variant="contained" onClick={() => void deleteUser()} disabled={deleting}>{deleting ? "削除中…" : "OK"}</Button></DialogActions></Dialog>
   </Stack>;
 }
 

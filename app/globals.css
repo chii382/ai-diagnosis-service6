@@ -15,15 +15,17 @@ html { scroll-behavior: smooth; scroll-padding-top: 92px; }
 body { margin: 0; overflow-x: hidden; color: var(--ink); background: #dce9fb; font-family: "Noto Sans JP", "Yu Gothic", "Hiragino Kaku Gothic ProN", sans-serif; }
 a { color: inherit; text-decoration: none; }
 button { font: inherit; }
+.crystal-button:disabled { cursor: not-allowed !important; opacity: .58; filter: saturate(.42) grayscale(.18); box-shadow: none !important; transform: none !important; }
 .MuiButton-root { writing-mode: horizontal-tb; white-space: nowrap; word-break: keep-all; }
-.session-status-badge { display: inline-grid; grid-template-columns: auto auto minmax(0,auto); align-items: center; gap: 3px 9px; min-width: 0; max-width: 380px; padding: 6px 13px; color: #fff; border: 1px solid rgba(255,206,241,.82); border-radius: 999px; background: radial-gradient(circle at 28% 0, rgba(255,174,229,.5), transparent 45%), linear-gradient(135deg, #b6349f, #752889 55%, #4a1d72); box-shadow: inset 0 1px 0 rgba(255,255,255,.32), 0 0 0 2px rgba(255,255,255,.1), 0 6px 18px rgba(89,24,111,.38), 0 0 16px rgba(226,91,193,.2); text-shadow: 0 1px 4px rgba(55,8,69,.62); }
-.session-status-label { color: #c9f4de; font-size: 10px; font-weight: 800; letter-spacing: .08em; white-space: nowrap; }
+.session-status-badge { display: inline-flex; align-items: center; justify-content: center; gap: 3px; min-width: 0; max-width: 320px; padding: 11px 17px; color: #fff; border: 1px solid rgba(255,206,241,.82); border-radius: 999px; background: radial-gradient(circle at 28% 0, rgba(255,174,229,.5), transparent 45%), linear-gradient(135deg, #b6349f, #752889 55%, #4a1d72); box-shadow: inset 0 1px 0 rgba(255,255,255,.32), 0 0 0 2px rgba(255,255,255,.1), 0 6px 18px rgba(89,24,111,.38), 0 0 16px rgba(226,91,193,.2); text-shadow: 0 1px 4px rgba(55,8,69,.62); white-space: nowrap; }
+.session-status-label { flex: 0 0 auto; color: #fff; font-size: 13px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; }
 .session-status-avatar { position: relative; grid-row: 1 / 3; grid-column: 2; width: 34px; height: 34px; display: grid; place-items: center; flex: 0 0 auto; overflow: visible; color: #5e286d; border: 2px solid rgba(255,241,190,.96); border-radius: 50%; background: linear-gradient(145deg, #fff7d6, #efc568); box-shadow: 0 3px 9px rgba(53,8,66,.32); font-size: 15px; font-weight: 900; text-shadow: none; }
 .session-status-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 .session-status-dot { position: absolute; right: -2px; bottom: -1px; width: 10px; height: 10px; border: 2px solid #6a257f; border-radius: 50%; background: #69edaa; box-shadow: 0 0 7px rgba(105,237,170,.92); }
-.session-status-name { min-width: 0; overflow: hidden; color: #fff; font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
+.session-status-name { display: inline-flex; min-width: 0; color: #fff; font-size: 13px; white-space: nowrap; }
+.session-status-name span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .session-status-email { grid-column: 3; overflow: hidden; color: rgba(255,233,250,.82); font-size: 10px; line-height: 1; text-overflow: ellipsis; white-space: nowrap; }
-.session-status-badge.is-compact { display: inline-flex; max-width: 220px; padding: 6px 12px 6px 7px; }
+.session-status-badge.is-compact { max-width: 250px; padding: 10px 14px; }
 ::selection { color: white; background: var(--blue); }
 .shell { width: min(1120px, calc(100% - 48px)); margin-inline: auto; }
 .skip-link { position: fixed; top: 8px; left: 8px; z-index: 9999; padding: 10px 16px; color: #fff; background: var(--deep); border-radius: 8px; transform: translateY(-150%); }
@@ -100,6 +102,8 @@ html[data-busy="true"] body::after { content: ""; position: fixed; inset: 0; z-i
 .subscription-cancel-area { margin-bottom: 14px; }
 .sanctuary-card .subscription-cancel-button { min-height: 42px; padding-inline: 19px; color: #8b2948 !important; border-color: rgba(166,55,88,.5) !important; background: linear-gradient(145deg, rgba(255,250,252,.92), rgba(250,224,233,.86)) !important; box-shadow: 0 6px 15px rgba(114,32,59,.1); }
 .sanctuary-card .subscription-cancel-button:hover { color: #711c39 !important; border-color: rgba(139,41,72,.72) !important; background: linear-gradient(145deg, #fff, #f7d4df) !important; }
+.sanctuary-card .subscription-resume-button { color: #fff !important; border: 1px solid rgba(243,215,136,.72); background: linear-gradient(135deg, #426dcc, #173f8b) !important; box-shadow: 0 8px 20px rgba(20,54,116,.22); }
+.sanctuary-card .subscription-resume-button:hover { color: #fff !important; background: linear-gradient(135deg, #527bd3, #214c9b) !important; }
 
 /* Admin sanctuary: operational clarity within the same crystal-and-gold world. */
 .admin-shell { position: relative; min-height: 100vh; overflow-x: hidden; isolation: isolate; color: var(--ink); background: radial-gradient(circle at 15% 8%, rgba(255,255,255,.94) 0 3%, rgba(185,218,252,.54) 18%, transparent 43%), radial-gradient(circle at 88% 72%, rgba(243,215,136,.2), transparent 32%), linear-gradient(145deg, #cbdff7 0%, #eef7ff 46%, #d8e9fb 100%); }
@@ -294,6 +298,11 @@ html[data-busy="true"] body::after { content: ""; position: fixed; inset: 0; z-i
 .legal-card dt, .legal-card dd { margin: 0; padding: 18px 16px; border-bottom: 1px solid rgba(94,128,180,.26); }
 .legal-card dt { color: var(--navy); font-weight: 800; }
 .legal-card dd { color: #405477; }
+.legal-card section { padding: 22px 0; border-bottom: 1px solid rgba(94,128,180,.2); }
+.legal-card section:first-of-type { padding-top: 0; }
+.legal-card section h2 { margin: 0 0 10px; color: var(--navy); font-family: var(--font-serif), serif; font-size: clamp(18px, 2vw, 22px); }
+.legal-card section p, .legal-card > p:last-child { margin: 0; color: #405477; line-height: 1.9; }
+.legal-card > p:last-child { margin-top: 24px; text-align: right; font-size: 14px; }
 .interior-footer { padding: 22px 24px; color: rgba(255,255,255,.7); text-align: center; letter-spacing: .05em; background: linear-gradient(180deg, #173c7d, #071a48); }
 @keyframes sanctuary-card-enter { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
 
@@ -554,6 +563,7 @@ html[data-busy="true"] body::after { content: ""; position: fixed; inset: 0; z-i
 .bottom-cta::before { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent 28%, rgba(9,36,87,.15) 46%, rgba(7,29,73,.68) 100%); }.bottom-cta > div:last-child { position: relative; z-index: 1; width: 100%; }
 .lotus { display: none; }
 .bottom-cta h2 { margin: 0; text-align: center; font-family: "Yu Mincho", serif; font-size: 30px; text-shadow: 0 3px 12px #071a48; }.bottom-cta p { margin: 8px 0 0; text-align: center; text-shadow: 0 2px 8px #071a48; }
+.bottom-cta h2 span { display: inline-block; white-space: nowrap; }
 .bottom-actions { flex-direction: column; gap: 12px; margin-top: 20px; }.bottom-actions .crystal-button { width: min(100%, 380px); align-self: center; flex: 0 0 66px; min-width: 0; height: 66px; min-height: 66px; max-height: 66px; padding: 9px clamp(24px, 3vw, 40px); overflow: hidden; white-space: normal; overflow-wrap: anywhere; word-break: normal; font-size: clamp(13px, 1.1vw, 16px); line-height: 1.3; }
 
 @media (min-width: 1101px) {
@@ -572,9 +582,9 @@ html[data-busy="true"] body::after { content: ""; position: fixed; inset: 0; z-i
   .site-header .brand strong { font-size: clamp(18px, 1.4vw, 20px); white-space: nowrap; }
   .site-header .brand small { display: none; }
   .site-header .nav { gap: clamp(10px, 1.15vw, 18px); font-size: clamp(13px, .98vw, 14px); }
-  .site-header .session-status-badge.is-compact { max-width: clamp(126px, 10vw, 150px); gap: 6px; padding: 6px 10px 6px 7px; }
+  .site-header .session-status-badge.is-compact { max-width: clamp(180px, 15vw, 230px); gap: 3px; padding: 9px 13px; }
   .site-header .session-status-badge.is-compact .session-status-avatar { width: 32px; height: 32px; }
-  .site-header .session-status-badge.is-compact .session-status-name { max-width: clamp(44px, 4vw, 62px); overflow: hidden; text-overflow: ellipsis; }
+  .site-header .session-status-badge.is-compact .session-status-name { max-width: clamp(72px, 7vw, 112px); }
   .site-header .session-status-email { display: none; }
   .site-header .nav-login { padding: 10px clamp(15px, 1.4vw, 20px); }
   .site-header .nav-dashboard { padding: 10px clamp(14px, 1.5vw, 20px); }
@@ -588,9 +598,9 @@ html[data-busy="true"] body::after { content: ""; position: fixed; inset: 0; z-i
   .site-header .brand strong { font-size: 17px; white-space: nowrap; }
   .site-header .brand small { display: none; }
   .site-header .nav { gap: clamp(9px, 1vw, 12px); font-size: 13px; }
-  .site-header .session-status-badge.is-compact { max-width: 122px; gap: 5px; padding: 6px 9px 6px 7px; }
+  .site-header .session-status-badge.is-compact { max-width: 190px; gap: 3px; padding: 8px 11px; }
   .site-header .session-status-badge.is-compact .session-status-avatar { width: 30px; height: 30px; }
-  .site-header .session-status-badge.is-compact .session-status-name { max-width: 42px; overflow: hidden; text-overflow: ellipsis; }
+  .site-header .session-status-badge.is-compact .session-status-name { max-width: 82px; }
   .site-header .session-status-email { display: none; }
   .site-header .nav-login { padding: 9px 14px; }
   .site-header .nav-dashboard { padding: 9px 13px; }

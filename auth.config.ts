@@ -23,9 +23,13 @@ export default {
         token.role = (user as typeof user & RoleUser).role === "admin" || (user.email && bootstrapAdmins.includes(user.email.toLowerCase())) ? "admin" : "user";
       }
       if (trigger === "update" && typeof session?.name === "string") {
-        token.name = session.name;
+        token.name = session.name.slice(0, 100);
       }
-      if (trigger === "update" && typeof session?.image === "string") token.picture = session.image;
+      // Base64画像をJWT Cookieへ入れるとVercelのヘッダー上限を超えるため、絶対に保存しません。
+      // Google等の短いHTTPS画像URLだけは既存のログインアイコン用に維持します。
+      if (typeof token.picture === "string" && (token.picture.startsWith("data:") || token.picture.length > 2048)) {
+        delete token.picture;
+      }
       return token;
     },
     session({ session, token }) {

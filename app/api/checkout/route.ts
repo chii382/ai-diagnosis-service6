@@ -35,8 +35,11 @@ export async function POST() {
       ? { _id: new ObjectId(userId) }
       : { email: authSession.user.email.toLowerCase() };
     const member = await (await clientPromise).db().collection("users").findOne(filter, {
-      projection: { stripeCustomerId: 1 },
+      projection: { plan: 1, stripeCustomerId: 1 },
     });
+    if (member?.plan === "paid") {
+      return NextResponse.json({ error: "すでに有料プランへお申し込み済みです。" }, { status: 409 });
+    }
     const metadata = {
       ...(userId ? { userId } : {}),
       userEmail: authSession.user.email.toLowerCase(),
