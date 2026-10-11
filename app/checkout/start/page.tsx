@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { CheckoutButton } from "@/app/components/CheckoutButton";
 import { InteriorShell } from "@/app/components/InteriorShell";
+import { ObjectId } from "mongodb";
+import clientPromise from "@/lib/mongodb";
 
 // ログイン認証とStripe Checkoutの間に置く、安全な中継画面です。
 export default async function CheckoutStartPage() {
@@ -12,6 +14,13 @@ export default async function CheckoutStartPage() {
   if (!session?.user) {
     redirect("/auth/signin?callbackUrl=/checkout/start");
   }
+
+  const filter = session.user.id && ObjectId.isValid(session.user.id)
+    ? { _id: new ObjectId(session.user.id) }
+    : session.user.email ? { email: session.user.email.toLowerCase() } : null;
+  if (!filter) redirect("/dashboard");
+  const member = await (await clientPromise).db().collection("users").findOne(filter, { projection: { plan: 1 } });
+  if (!member || member.plan === "paid") redirect("/dashboard");
 
   return (
     <InteriorShell eyebrow="SECURE CHECKOUT" title="購入手続きを準備しています" description="ログイン状態を確認しました。Stripeの安全な決済画面へ移動します。">

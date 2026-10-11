@@ -18,6 +18,7 @@ import { CancelSubscriptionButton } from "./CancelSubscriptionButton";
 import { Alert } from "@mui/material";
 import { PremiumHistoryButton } from "@/app/components/PremiumHistoryButton";
 import { refreshStripeSubscription } from "@/lib/stripe-billing";
+import { CheckoutButton } from "@/app/components/CheckoutButton";
 
 export default async function DashboardPage({ searchParams }: { searchParams?: Promise<{ upgrade?: string }> }) {
   const session = await auth();
@@ -54,7 +55,12 @@ export default async function DashboardPage({ searchParams }: { searchParams?: P
                 <Typography color="secondary.dark" fontWeight={800} letterSpacing=".08em">MEMBER PROFILE</Typography>
                 <Typography variant="h4" component="h2" className="card-title" sx={{ mt: 1 }}>あなたのプロフィール</Typography>
                 <Typography color="text.secondary" sx={{ mt: 1 }}>{user.email}</Typography>
-                <Chip className={`plan-chip plan-chip--${plan}`} icon={<WorkspacePremiumIcon />} label={plan === "paid" ? "有料プラン" : "無料プラン"} sx={{ mt: 2 }} />
+                {plan === "free" ? (
+                  <Stack direction="row" gap={1.5} alignItems="center" flexWrap="wrap" justifyContent={{ xs: "center", sm: "flex-start" }} sx={{ mt: 2 }}>
+                    <Chip className="plan-chip plan-chip--free" icon={<WorkspacePremiumIcon />} label="無料プラン" />
+                    <CheckoutButton label="有料プランへ進む" className="dashboard-upgrade-action" />
+                  </Stack>
+                ) : <Chip className="plan-chip plan-chip--paid" icon={<WorkspacePremiumIcon />} label="有料プラン" sx={{ mt: 2 }} />}
               </Box>
               {isAdmin && <Box className="dashboard-admin-slot"><Button component={Link} className="dashboard-admin-action" href="/admin" variant="contained" startIcon={<AdminPanelSettingsIcon />}>管理者画面</Button></Box>}
             </Stack>

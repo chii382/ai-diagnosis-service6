@@ -1,4 +1,5 @@
 import { DiagnosisCta } from "./DiagnosisCta";
+import { HeroPurchaseCta } from "./HeroPurchaseCta";
 
 export function HeroSection() {
   return (
@@ -18,7 +19,7 @@ export function HeroSection() {
         <p className="hero-copy">わずか3分。あなたの性格、価値観、才能、迷いをAIが分析し、<br className="desktop-only" />「今、本当に進むべき道」と「明日から踏み出せる一歩」を提案します。</p>
         <div className="hero-actions">
           <DiagnosisCta variant="light">無料で少しずつ始めてみる</DiagnosisCta>
-          <DiagnosisCta variant="primary" paid>思い切って本当の自分と向き合ってみる</DiagnosisCta>
+          <HeroPurchaseCta />
         </div>
       </div>
     </section>

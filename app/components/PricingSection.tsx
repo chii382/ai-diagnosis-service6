@@ -13,6 +13,7 @@ export function PricingSection() {
     <section className="content-section" id="pricing" aria-labelledby="pricing-title">
       <div className="shell">
         <h2 className="section-title" id="pricing-title"><span />料金プラン<span /></h2>
+        <p className="pricing-description">お試しで始められる「無料プラン」と「月額サブスクの有料プラン」をお用意しております。</p>
         <div className="pricing-grid">
           <article className="plan-card glass-card" id="free-plan">
             <h3>無料プラン</h3><p className="price"><small>¥</small>0</p><p className="plan-lead">少しずつ自分を知る</p>
@@ -21,7 +22,7 @@ export function PricingSection() {
           </article>
           <article className="plan-card paid-card" id="paid-plan">
             <span className="recommend">おすすめ</span>
-            <h3>有料プラン</h3><p className="price"><small>¥</small>980</p><p className="plan-lead">本当の自分と向き合うため<br />行動プランを知る</p>
+            <h3>有料プラン</h3><p className="price"><small>月額 ¥</small>980</p><p className="plan-lead">本当の自分と向き合うため<br />行動プランを知る</p>
             <List items={paid} gold />
             <CheckoutButton className="crystal-button gold" label="今すぐ有料プランに進む" />
           </article>

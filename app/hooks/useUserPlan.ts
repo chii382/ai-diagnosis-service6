@@ -4,37 +4,40 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 type UserPlan = "free" | "paid";
-let cachedPlan: UserPlan | null = null;
-let planRequest: Promise<UserPlan> | null = null;
+const planRequests = new Map<string, Promise<UserPlan>>();
 
-function requestPlan() {
-  if (cachedPlan) return Promise.resolve(cachedPlan);
+function requestPlan(userId: string) {
+  let planRequest = planRequests.get(userId);
   if (!planRequest) {
-    planRequest = fetch("/api/user/plan")
+    planRequest = fetch("/api/user/plan", { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) throw new Error("plan-fetch-failed");
         const data = await response.json() as { plan?: UserPlan };
-        cachedPlan = data.plan === "paid" ? "paid" : "free";
-        return cachedPlan;
+        return data.plan === "paid" ? "paid" : "free";
       })
-      .finally(() => { planRequest = null; });
+      .finally(() => { planRequests.delete(userId); });
+    planRequests.set(userId, planRequest);
   }
   return planRequest;
 }
 
 export function useUserPlan() {
-  const { status } = useSession();
-  const [plan, setPlan] = useState<UserPlan | null>(status === "authenticated" ? cachedPlan : null);
+  const { data: session, status } = useSession();
+  const [plan, setPlan] = useState<UserPlan | null>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     if (status !== "authenticated") {
       setPlan(null);
+      setError(false);
       return;
     }
     let active = true;
-    void requestPlan().then((value) => { if (active) setPlan(value); }).catch(() => { if (active) setPlan("free"); });
+    setPlan(null);
+    setError(false);
+    void requestPlan(session?.user?.id || session?.user?.email || "current").then((value) => { if (active) setPlan(value); }).catch(() => { if (active) setError(true); });
     return () => { active = false; };
-  }, [status]);
+  }, [status, session?.user?.id, session?.user?.email]);
 
-  return { plan, loading: status === "loading" || (status === "authenticated" && plan === null) };
+  return { plan, error, loading: status === "loading" || (status === "authenticated" && plan === null && !error) };
 }

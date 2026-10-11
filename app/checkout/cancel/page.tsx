@@ -1,4 +1,3 @@
-import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
 import HomeRoundedIcon from "@mui/icons-material/HomeRounded";
 import { Button, Card, CardContent, Stack, Typography } from "@mui/material";
 import Link from "next/link";
@@ -15,10 +14,7 @@ export default function CheckoutCancelPage() {
               決済は行われていません。内容をご確認のうえ、いつでも改めてお申し込みいただけます。
             </Typography>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center">
-              <Button component={Link} href="/pricing" variant="contained" startIcon={<ArrowBackRoundedIcon />}>
-                料金ページへ
-              </Button>
-              <Button component={Link} href="/" variant="outlined" startIcon={<HomeRoundedIcon />}>
+              <Button component={Link} href="/?skipOpening=1#top" prefetch={false} variant="outlined" startIcon={<HomeRoundedIcon />}>
                 トップページへ
               </Button>
             </Stack>

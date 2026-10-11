@@ -75,6 +75,8 @@ html[data-busy="true"] body::after { content: ""; position: fixed; inset: 0; z-i
 .interior-page--profile::before, .interior-page--diagnosis::before, .interior-page--diagnosis-history::before, .interior-page--diagnosis-detail::before { inset: 78px 0 0; width: auto; height: auto; border-radius: 0; opacity: 1; filter: none; background: radial-gradient(circle at 50% 28%, rgba(255,255,255,.56), transparent 48%); }
 .interior-page--profile::after, .interior-page--diagnosis::after, .interior-page--diagnosis-history::after, .interior-page--diagnosis-detail::after { display: none; }
 .plan-chip { font-weight: 800; letter-spacing: .04em; }
+.dashboard-upgrade-action { width: auto !important; min-height: 48px !important; padding: 10px 26px !important; font-size: 16px !important; font-weight: 900 !important; white-space: nowrap; color: #142348 !important; background: linear-gradient(135deg, #ffe985, #ffd044) !important; border: 2px solid #b87b12 !important; border-radius: 999px !important; box-shadow: 0 0 0 3px rgba(255,255,255,.85), 0 8px 20px rgba(184,123,18,.28) !important; }
+.dashboard-upgrade-action:hover { background: linear-gradient(135deg, #fff1ad, #ffdd68) !important; border-color: #b87b12 !important; }
 .plan-chip--free { color: #24457f !important; border: 1px solid rgba(66,107,174,.3); background: rgba(215,232,251,.9) !important; }
 .plan-chip--paid { color: #68470b !important; border: 1px solid rgba(216,168,54,.5); background: linear-gradient(135deg, #fff8db, #f3d788) !important; box-shadow: 0 4px 14px rgba(216,168,54,.22); }
 .dashboard-profile-grid { width: 100%; margin-inline: auto; display: grid; grid-template-columns: minmax(140px,.75fr) minmax(140px,.75fr) minmax(280px,1.5fr); gap: 11px; }
@@ -461,6 +463,13 @@ html[data-busy="true"] body::after { content: ""; position: fixed; inset: 0; z-i
 .hero-catch { margin: 0; font-family: "Yu Mincho", serif; font-size: clamp(22px, 3vw, 33px); font-weight: 700; line-height: 1.55; }
 .hero-copy { margin: 18px auto 0; max-width: 650px; font-size: 14px; font-weight: 600; line-height: 1.9; }
 .hero-actions, .bottom-actions { display: flex; justify-content: center; gap: 20px; margin-top: 28px; }
+.hero-actions { align-items: flex-end; }
+.hero-purchase-cta { position: relative; padding-top: 48px; }
+.hero-purchase-bubble { position: absolute; top: 0; left: 50%; width: max-content; max-width: 100%; padding: 8px 20px; border: 2px solid #fff5cb; border-radius: 999px; color: #142348; background: #ffdc54; font-size: 16px; font-weight: 800; line-height: 1.4; text-align: center; box-shadow: 0 4px 18px rgba(255,214,68,.5); animation: purchase-bubble-bounce 2.8s ease-in-out infinite; }
+.hero-purchase-bubble::after { content: ""; position: absolute; bottom: -9px; left: calc(50% - 8px); border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 9px solid #ffdc54; }
+@keyframes purchase-bubble-bounce { 0%, 45%, 100% { transform: translateX(-50%) translateY(0) rotate(0); } 12%, 30% { transform: translateX(-50%) translateY(-7px) scale(1.04); } 21% { transform: translateX(-50%) translateY(-2px) rotate(-2deg); } }
+@media (max-width: 700px) { .hero-purchase-cta { width: 100%; } }
+@media (prefers-reduced-motion: reduce) { .hero-purchase-bubble { animation: none; transform: translateX(-50%); } }
 .crystal-button { min-height: 58px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 34px; border: 0; border-radius: 999px; font: inherit; font-weight: 700; text-align: center; cursor: pointer; filter: drop-shadow(0 10px 14px rgba(12,39,99,.28)); transition: transform .2s, filter .2s; }
 .crystal-button:hover { transform: translateY(-2px) scale(1.01); filter: drop-shadow(0 14px 19px rgba(12,39,99,.35)) brightness(1.05); }
 .crystal-button.light { color: #996913; background: transparent url("/images/button-plate-light.png") center / 100% 100% no-repeat; }
@@ -508,6 +517,7 @@ html[data-busy="true"] body::after { content: ""; position: fixed; inset: 0; z-i
 .section-title { position: relative; display: flex; align-items: center; justify-content: center; gap: 25px; margin: 0 0 28px; font-family: "Yu Mincho", serif; font-size: 30px; font-weight: 600; }
 .section-title span { width: 120px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
 .section-title span:last-child { background: linear-gradient(90deg, var(--gold), transparent); }
+.pricing-description { margin: -10px 0 28px; text-align: center; font-family: "Yu Mincho", serif; font-size: 18px; font-weight: 600; line-height: 1.8; }
 .step-grid { width: min(920px,100%); margin-inline: auto; display: flex; flex-direction: column; gap: 32px; }
 .step-grid::before { content: ""; position: absolute; top: 8%; bottom: 8%; left: 99px; width: 2px; background: linear-gradient(180deg,transparent,rgba(91,135,202,.55) 12%,rgba(215,168,56,.7) 50%,rgba(91,135,202,.55) 88%,transparent); box-shadow: 0 0 12px rgba(99,155,231,.32); }
 .step-card, .step-card:nth-child(even) { width: 100%; min-height: 178px; display: flex; align-items: center; align-self: stretch; gap: 32px; padding: 28px 46px; overflow: visible; border: 1px solid rgba(119,160,215,.48); border-radius: 24px; background: linear-gradient(135deg,rgba(255,255,255,.95),rgba(222,237,252,.88)); box-shadow: 0 16px 30px rgba(32,70,126,.14), inset 0 0 0 2px rgba(255,255,255,.72), inset 0 0 30px rgba(255,255,255,.86); backdrop-filter: blur(13px); }
@@ -664,3 +674,12 @@ html[data-busy="true"] body::after { content: ""; position: fixed; inset: 0; z-i
 @media (hover: none), (pointer: coarse) {
   .crystal-wait-cursor { display: none; }
 }
+.bottom-actions { align-items: center; }
+.bottom-actions .hero-purchase-cta { width: min(100%, 380px); min-width: 0; }
+.bottom-actions .hero-purchase-cta .crystal-button { width: 100%; }
+@media (min-width: 1101px) {
+  .bottom-actions { align-items: flex-end; }
+  .bottom-actions > .crystal-button { align-self: flex-end; }
+  .bottom-actions .hero-purchase-cta { flex: 1 1 0; width: auto; }
+}
+

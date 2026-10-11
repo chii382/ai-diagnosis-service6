@@ -11,13 +11,17 @@ export function CheckoutButton({
   label = "購入する",
   className,
   autoStart = false,
+  subscribedLabel = "有料プラン申込済み",
+  describedBy,
 }: {
   label?: string;
   className?: string;
   autoStart?: boolean;
+  subscribedLabel?: string;
+  describedBy?: string;
 }) {
   const { status } = useSession();
-  const { plan, loading: planLoading } = useUserPlan();
+  const { plan, loading: planLoading, error: planError } = useUserPlan();
   const autoStarted = useRef(false);
   // 通信中かどうかを保持し、二重クリックを防ぎます。
   const [loading, setLoading] = useState(false);
@@ -30,7 +34,7 @@ export function CheckoutButton({
       window.location.assign("/auth/signin?callbackUrl=%2Fcheckout%2Fstart");
       return;
     }
-    if (planLoading || plan === "paid") return;
+    if (planLoading || planError || plan === "paid") return;
     setLoading(true);
     setHasError(false);
 
@@ -56,14 +60,17 @@ export function CheckoutButton({
       setHasError(true);
       setLoading(false);
     }
-  }, [plan, planLoading, status]);
+  }, [plan, planLoading, planError, status]);
 
   // ログイン後の中継画面では、認証済みセッションを確認してから一度だけCheckoutを開始します。
   useEffect(() => {
-    if (!autoStart || status !== "authenticated" || planLoading || plan === "paid" || autoStarted.current) return;
+    if (!autoStart || status !== "authenticated" || planLoading || planError || autoStarted.current) return;
+    if (plan === "paid") { window.location.replace("/dashboard"); return; }
     autoStarted.current = true;
     void startCheckout();
-  }, [autoStart, plan, planLoading, startCheckout, status]);
+  }, [autoStart, plan, planLoading, planError, startCheckout, status]);
+
+  if (planError) return <Alert severity="error">契約状態を確認できません。画面を再読み込みしてください。</Alert>;
 
   if (hasError) {
     return (
@@ -89,11 +96,12 @@ export function CheckoutButton({
         type="button"
         variant="contained"
         size="large"
-        disabled={loading || (status === "authenticated" && (planLoading || plan === "paid"))}
+        aria-describedby={describedBy}
+        disabled={status === "loading" || loading || (status === "authenticated" && (planLoading || plan === "paid"))}
         onClick={() => void startCheckout()}
         startIcon={loading ? <CircularProgress size={20} color="inherit" /> : undefined}
       >
-        {loading ? "購入画面を準備中…" : plan === "paid" ? "有料プラン申込済み" : label}
+        {loading ? "購入画面を準備中…" : plan === "paid" ? subscribedLabel : label}
       </Button>
     </Stack>
   );
